@@ -44,8 +44,6 @@
 
   <text x="254" y="250" font-size="16" text-anchor="middle" fill="red">(256, 256)</text>
 
-  <ellipse fill="#77DD47" stroke="#246614" stroke-width="5" cx="256" cy="270" rx="200" ry="150" opacity="0.2"/>
-
   <defs>
     <path id="edgePath" d="M 85 192 A 100 55, 65, 0, 1, 102 102 A 100 55, 0, 0, 1, 175 128 A 100 25, 0, 0, 1, 265 120 A 30 25, 160, 0, 1, 350 115 A 25 20, 155, 0, 1, 430 150 A 25 40, 10, 1, 1, 435 230 A 195 150, 0, 1, 1, 85 192" stroke-width="10" stroke="#F00" fill="none" opacity="0.3"/>
   </defs>
