@@ -50,6 +50,8 @@
 
   <use xlink:href="#edgePath"/>
 
+  <text x="83" y="186" font-size="16" text-anchor="middle" fill="red">(85, 192)</text>
+
   <circle id="c" cx="85" cy="192" r="1" stroke="red" fill="none">
     <animate attributeName="r" to="10" dur="2s" repeatCount="indefinite"/>
   </circle>
