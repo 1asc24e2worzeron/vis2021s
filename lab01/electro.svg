@@ -84,8 +84,8 @@
     <animateMotion dur="12s" repeatCount="indefinite" rotate="auto">
       <mpath xlink:href="#edgePath"/>
     </animateMotion>
-    <animate attributeName="r" to="15" dur="3s" repeatCount="indefinite"/>
-    <animate attributeName="stroke" to="yellow" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="r" to="15" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="stroke" to="yellow" dur="1.5s" repeatCount="indefinite"/>
   </circle>
   
   <path d="M256 256 V270 V242 M256 256 H270 H242" stroke="black" fill="white"></path>
