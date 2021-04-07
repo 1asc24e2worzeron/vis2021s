@@ -100,15 +100,15 @@
 						return;
 					}
 					
-                    //clear container
-                    if (treemapContainer.innerHTML.length){
-                        treemapContainer.innerHTML = ''
-                    }
+					//clear container
+					if (treemapContainer.innerHTML.length){
+						treemapContainer.innerHTML = ''
+					}
 					
 					dataClassifier(objectKeys.value, function(data, layers){
-                        node = getNode(data, layers, treemapContainer)
-                        treemapContainer.appendChild(node)
-                    })
+						node = getNode(data, layers, treemapContainer)
+						treemapContainer.appendChild(node)
+					})
 				})
 				
 				dataLoader('./tpeGunCodeChanged.csv', function(){
