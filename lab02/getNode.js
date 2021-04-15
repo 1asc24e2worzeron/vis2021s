@@ -109,7 +109,7 @@ function getNode(data, layer, container){
             else return ""
         })
         //設定文字大小&顏色
-        .attr('font-size', function(d) { return '0.8rem' })
+        .attr('font-size', function(d) { return '1rem' })
          .attr('fill', 'white')
 
     //寫項目的數值，例如部門的人事費總額、業務費總額
@@ -125,7 +125,7 @@ function getNode(data, layer, container){
 				return d.data.value
 			else return ""
 		})
-		.attr('font-size', function(d) { return '.9rem' })
+		.attr('font-size', function(d) { return '.8rem' })
 		.attr('fill', 'white')
          
 
