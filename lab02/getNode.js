@@ -72,7 +72,7 @@ function getNode(data, layer, container){
                     //設定區間，看最高多少和最低多少
                       .domain([100, 20])
                     //設定區間的透明度
-                      .range([1, .6])
+                      .range([1, .4])
                       
 
     //畫長方形
@@ -110,7 +110,7 @@ function getNode(data, layer, container){
         })
         //設定文字大小&顏色
         .attr('font-size', function(d) { return '0.9rem' })
-         .attr('fill', 'white')
+        .attr('fill', 'white')
 
     //寫項目的數值，例如部門的人事費總額、業務費總額
 	svg
