@@ -1,14 +1,95 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
-  <head>
+<head>
     <meta charset="utf-8">
-    <title>D3 Page Template</title>
-    <script src="http://d3js.org/d3.v6.min.js" charset="utf-8"></script> <!-- v6.5.0 -->
+    <title>Lab 05</title>
+    <style>
+      div.bar{
+        border: 1px solid CornflowerBlue;
+        padding: 10px;
+        margin: 5px;
+        display: inline-block;
+        width: 20px;
+        height: 75px;
+        background-color: cyan;
+        vertical-align : bottom;
+      }
+      body{
+        border: 1px solid pink;
+        padding: 10px 0;
+      }
+      div:hover{
+        background-color: DarkTurquoise;
+      }
+    </style>
 </head>
 <body>
-    <script type="text/javascript">
-      // Your beautiful D3 code will go here
-    </script>
-  </body>
+	<script src="./d3.v3.min.js"></script>
+	<script type="text/javascript">
+		
+		d3.text("data.csv", function(data){
+			
+			var w = screen.width;
+			var h = 275;
+			var barPadding = 5;
+			
+			var parseCSV = d3.csv.parseRows(data);
+			
+			console.log(parseCSV);
+			
+			dataDict = parseCSV;
+		
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+
+			svg.selectAll("rect")
+				.data(dataDict)
+				.enter()
+				.append("rect")
+				.filter(function(d, i){
+					return (i != 0);
+				})
+				.attr("x", function(d, i) {
+					return i * (w / dataDict.length);
+				})
+				.attr("y", function(d) {
+					return h - (d[1] * 6);
+				})
+				.attr("width", w / dataDict.length - barPadding)
+				.attr("height", function(d) {
+					return d[1] * 6;
+				})
+				.attr("fill", function(d) {
+					return "rgb(0, 75, " + Math.round(d[1] * 6) + ")";
+				});
+				
+			svg.selectAll("text")
+			   .data(dataDict)
+			   .enter()
+			   .append("text")
+			   .filter(function(d, i){
+					return (i != 0);
+				})
+			   .text(function(d) {
+					return d[1];
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+					return i * (w / dataDict.length) + (w / dataDict.length - barPadding) / 2;
+			   })
+			   .attr("y", function(d) {
+					return h - (d[1] * 6) - 12;
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "black");
+			   
+		});
+		   
+	</script>
+</body>
 </html>
   
