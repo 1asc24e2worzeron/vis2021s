@@ -29,7 +29,7 @@
 		
 		d3.text("data.csv", function(data){
 			
-			var w = screen.width*0.85;
+			var w = screen.width*0.875;
 			var h = 400;
 			var barPadding = 5;
 			
@@ -56,11 +56,11 @@
 					return i * (w / dataDict.length);
 				})
 				.attr("y", function(d) {
-					return h - (d[1] * 9);
+					return h - (d[1] * 8.5);
 				})
 				.attr("width", w / dataDict.length - barPadding)
 				.attr("height", function(d) {
-					return d[1] * 9;
+					return d[1] * 8.5;
 				})
 				.attr("fill", function(d) {
 					return "rgb(0, 75, " + Math.round(d[1] * 6) + ")";
@@ -81,7 +81,7 @@
 					return i * (w / dataDict.length) + (w / dataDict.length - barPadding) / 2;
 			   })
 			   .attr("y", function(d) {
-					return h - (d[1] * 9) - 12;
+					return h - (d[1] * 8.5) - 12;
 			   })
 			   .attr("font-family", "sans-serif")
 			   .attr("font-size", "11px")
