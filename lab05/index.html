@@ -29,7 +29,7 @@
 		
 		d3.text("data.csv", function(data){
 			
-			var w = screen.width*0.8;
+			var w = screen.width*0.9;
 			var h = 275;
 			var barPadding = 5;
 			
@@ -42,7 +42,7 @@
 			//Create SVG element
 			var svg = d3.select("body")
 						.append("svg")
-						.attr("x", 700 - h + 12)
+						.attr("y", 700 - h + 12)
 						.attr("width", w)
 						.attr("height", h);
 
