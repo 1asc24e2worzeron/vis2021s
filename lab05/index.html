@@ -1,30 +1,37 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-    <meta charset="utf-8">
-    <title>Lab 05</title>
-    <style>
-      div.bar{
-        border: 1px solid CornflowerBlue;
-        padding: 10px;
-        margin: 5px;
-        display: inline-block;
-        width: 20px;
-        height: 75px;
-        background-color: cyan;
-        vertical-align : bottom;
-      }
-      body{
-        border: 1px solid pink;
-        padding: 10px 0;
-      }
-      div:hover{
-        background-color: DarkTurquoise;
-      }
-    </style>
+	<meta charset="utf-8">
+
+	<title>Lab 05</title>
+
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC&display=swap" rel="stylesheet">
+	<script src="./d3.v3.min.js"></script>
+
+	<style>
+		div.bar{
+			border: 1px solid CornflowerBlue;
+			padding: 10px;
+			margin: 5px;
+			display: inline-block;
+			width: 20px;
+			height: 75px;
+			background-color: cyan;
+			vertical-align : bottom;
+		}
+		
+		body{
+			font-family: 'Noto Serif TC', serif;
+			border: 1px solid pink;
+			padding: 10px 0;
+		}
+		
+		div:hover{
+			background-color: DarkTurquoise;
+		}
+	</style>
 </head>
 <body>
-	<script src="./d3.v3.min.js"></script>
 	<script type="text/javascript">
 		
 		d3.text("data.csv", function(data){
@@ -83,7 +90,6 @@
 			   .attr("y", function(d) {
 					return h - (d[1] * 8.5) - 12;
 			   })
-			   .attr("font-family", 'Noto Serif TC')
 			   .attr("font-size", "11px")
 			   .attr("fill", "black");
 			   
