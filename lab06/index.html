@@ -37,7 +37,7 @@
 
   var margin = {top: 20, right: 60, bottom: 35, left: 30};
 
-  var width = 2000 - margin.left - margin.right,
+  var width = 3000 - margin.left - margin.right,
       height = 600 - margin.top - margin.bottom;
 
   var svg = d3.select("body")
@@ -50,33 +50,22 @@
 
   /* Data in strings like it would be if imported from a csv */
 
-  var data = [
-    { year: "2006", redDelicious: "10", mcintosh: "15", oranges: "9", pears: "6" },
-    { year: "2007", redDelicious: "12", mcintosh: "18", oranges: "9", pears: "4" },
-    { year: "2008", redDelicious: "05", mcintosh: "20", oranges: "8", pears: "2" },
-    { year: "2009", redDelicious: "01", mcintosh: "15", oranges: "5", pears: "4" },
-    { year: "2010", redDelicious: "02", mcintosh: "10", oranges: "4", pears: "2" },
-    { year: "2011", redDelicious: "03", mcintosh: "12", oranges: "6", pears: "3" },
-    { year: "2012", redDelicious: "04", mcintosh: "15", oranges: "8", pears: "1" },
-    { year: "2013", redDelicious: "06", mcintosh: "11", oranges: "9", pears: "4" },
-    { year: "2014", redDelicious: "10", mcintosh: "13", oranges: "9", pears: "5" },
-    { year: "2015", redDelicious: "16", mcintosh: "19", oranges: "6", pears: "9" },
-    { year: "2016", redDelicious: "19", mcintosh: "17", oranges: "5", pears: "7" },
-  ];
-
   var parse = d3.time.format("%Y").parse;
 
   var datas = [];
 
   var text = d3.text("./data.csv", function(data){
+  
     var parseCSV =  d3.csv.parseRows(data);
-    parseCSV.forEach(function(item, index){
+    
+	parseCSV.forEach(function(item, index){
       if(index != 0){
         datas.push({index:index-1,Ch:item[0],En:item[1],Fr:item[2],Ge:item[3],Ja:item[4],type1:item[5],type2:item[6]})
       }
     });
-    datas = Object.values(datas);
-    var dataset = d3.layout.stack()(["Ch", "En", "Fr", "Ge", "Ja"].map(function(type) {
+	datas = Object.values(datas);
+    
+	var dataset = d3.layout.stack()(["Ch", "En", "Fr", "Ge", "Ja"].map(function(type) {
       return datas.map(function(d) {
         console.log(d);
         return {x: d.index, y: +d[type]};
@@ -92,7 +81,7 @@
     .domain([0, d3.max(dataset, function(d) {  return d3.max(d, function(d) { return d.y0 + d.y; });  })])
     .range([height, 0]);
 
-  var colors = ["b33040", "#d25c4d", "#f2b447", "#d9d574", "#0968f1"];
+  var colors = ["#ff0000", "#000000", "#f2b447", "#ff1493", "#0968f1"];
 
 
   // Define and draw axes
@@ -122,7 +111,8 @@
   // Create groups for each series, rects for each segment
   var groups = svg.selectAll("g.cost")
     .data(dataset)
-    .enter().append("g")
+    .enter()
+	.append("g")
     .attr("class", "cost")
     .style("fill", function(d, i) { return colors[i]; });
 
@@ -134,8 +124,20 @@
     .attr("y", function(d) { return y(d.y0 + d.y); })
     .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); })
     .attr("width", x.rangeBand())
-    .on("mouseover", function() { tooltip.style("display", null); })
-    .on("mouseout", function() { tooltip.style("display", "none"); })
+    .on("mouseover", function(){
+		tooltip.style("display", null);
+		d3.select(this)
+			.style({
+				'fill': '#888888'
+			});
+	})
+    .on("mouseout", function(d) {
+		tooltip.style("display", "none");
+		d3.select(this)
+			.style({
+				'fill': colors[d.y]
+			});
+	})
     .on("mousemove", function(d) {
       var xPosition = d3.mouse(this)[0] - 15;
       var yPosition = d3.mouse(this)[1] - 25;
