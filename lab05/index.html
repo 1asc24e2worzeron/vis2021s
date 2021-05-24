@@ -36,22 +36,44 @@
 		
 		d3.text("data.csv", function(data){
 			
+			var dataDict = d3.csv.parseRows(data);
+			
 			var w = screen.width*0.875;
 			var h = 400;
 			var barPadding = 5;
-			
-			var parseCSV = d3.csv.parseRows(data);
-			
-			console.log(parseCSV);
-			
-			dataDict = parseCSV;
+			var barWidth = w / dataDict.length - barPadding;
 		
-			//Create SVG element
+			// axis 設定...
+			var minBound = d3.min(dataDict, function(d, i) { if (i != 0) return +d[0]; else return; });
+			var maxBound = d3.max(dataDict, function(d, i) { if (i != 0) return +d[0]; else return; });
+			var maxFrequency = d3.max(dataDict, function(d, i) { if (i != 0) return +d[1]; else return; });
+		
+			var xScale = d3.scale.linear()
+							 .domain([minBound, maxBound])
+							 .range([barWidth/2 + 50, w - barWidth/2]);
+		
+			var yScale = d3.scale.linear()
+							 .domain([0, maxFrequency])
+							 .range([h, h - maxFrequency*8.5]);
+								 
+			var xAxis = d3.svg.axis()
+							.orient("bottom")
+							.scale(xScale)
+							.ticks(dataDict.length);
+		
+			var yAxis = d3.svg.axis()
+							.scale(yScale)
+							.ticks(10)
+							.orient('right');
+			// ...axis 設定
+		
+			// Create SVG element
 			var svg = d3.select("body")
 						.append("svg")
 						.attr("width", w)
-						.attr("height", h);
-
+						.attr("height", h + 50);
+						
+			// 長條圖
 			svg.selectAll("rect")
 				.data(dataDict)
 				.enter()
@@ -60,19 +82,20 @@
 					return (i != 0);
 				})
 				.attr("x", function(d, i) {
-					return i * (w / dataDict.length);
+					return i * (w / dataDict.length) + 50;
 				})
 				.attr("y", function(d) {
 					return h - (d[1] * 8.5);
 				})
-				.attr("width", w / dataDict.length - barPadding)
+				.attr("width", barWidth)
 				.attr("height", function(d) {
 					return d[1] * 8.5;
 				})
 				.attr("fill", function(d) {
 					return "rgb(0, 75, " + Math.round(d[1] * 6) + ")";
 				});
-				
+			
+			// 頻率
 			svg.selectAll("text")
 			   .data(dataDict)
 			   .enter()
@@ -85,14 +108,29 @@
 			   })
 			   .attr("text-anchor", "middle")
 			   .attr("x", function(d, i) {
-					return i * (w / dataDict.length) + (w / dataDict.length - barPadding) / 2;
+					return i * (w / dataDict.length) + barWidth / 2 + 50;
 			   })
 			   .attr("y", function(d) {
 					return h - (d[1] * 8.5) - 12;
 			   })
 			   .attr("font-size", "11px")
 			   .attr("fill", "black");
-			   
+						
+			// x軸
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(0," + h + ")")
+				.attr("font-size", "11px")
+				.attr("fill", "black")
+				.call(xAxis);
+			
+			// y軸
+			svg.append('g') 
+				.attr('class', 'axis')
+				.attr("font-size", "11px")
+				.attr("fill", "black")
+				.call(yAxis);
+			
 		});
 		   
 	</script>
