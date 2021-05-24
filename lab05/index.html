@@ -29,6 +29,10 @@
 		div:hover{
 			background-color: DarkTurquoise;
 		}
+		
+		.axis .tick line {
+			stroke: #dddddd;
+		}
 	</style>
 </head>
 <body>
@@ -38,10 +42,11 @@
 			
 			var dataDict = d3.csv.parseRows(data);
 			
-			var w = screen.width*0.875;
-			var h = 400;
+			var w = screen.width*0.85, h = 400;
 			var barPadding = 5;
+			
 			var barWidth = w / dataDict.length - barPadding;
+			var predictedPlotWidth = w + 50 - (w / dataDict.length) - barWidth/2 - barPadding;
 		
 			// axis 設定...
 			var minBound = d3.min(dataDict, function(d, i) { if (i != 0) return +d[0]; else return; });
@@ -50,7 +55,7 @@
 		
 			var xScale = d3.scale.linear()
 							 .domain([minBound, maxBound])
-							 .range([barWidth/2 + 50, w - barWidth/2]);
+							 .range([barWidth/2 + 50, predictedPlotWidth]);
 		
 			var yScale = d3.scale.linear()
 							 .domain([0, maxFrequency])
@@ -64,14 +69,52 @@
 			var yAxis = d3.svg.axis()
 							.scale(yScale)
 							.ticks(10)
-							.orient('right');
+							.tickSize(-predictedPlotWidth, 0, 0)
+							.orient('left');
 			// ...axis 設定
 		
 			// Create SVG element
 			var svg = d3.select("body")
 						.append("svg")
-						.attr("width", w)
+						.attr("width", w + 50)
 						.attr("height", h + 50);
+			
+			// 頻率
+			svg.selectAll("text")
+			   .data(dataDict)
+			   .enter()
+			   .append("text")
+			   .filter(function(d, i){
+					return (i != 0);
+				})
+			   .text(function(d) {
+					return d[1];
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+					return i * (w / dataDict.length) + barWidth / 2 + 50;
+			   })
+			   .attr("y", function(d) {
+					return h - (d[1] * 8.5) - 12;
+			   })
+			   .attr("font-size", "11px")
+			   .attr("fill", "black");
+			
+			// x軸
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(0," + h + ")")
+				.attr("font-size", "11px")
+				.attr("fill", "black")
+				.call(xAxis);
+			
+			// y軸
+			svg.append('g') 
+				.attr('class', 'axis')
+				.attr("transform", "translate(25,0)")
+				.attr("font-size", "11px")
+				.attr("fill", "black")
+				.call(yAxis);
 						
 			// 長條圖
 			svg.selectAll("rect")
@@ -94,42 +137,6 @@
 				.attr("fill", function(d) {
 					return "rgb(0, 75, " + Math.round(d[1] * 6) + ")";
 				});
-			
-			// 頻率
-			svg.selectAll("text")
-			   .data(dataDict)
-			   .enter()
-			   .append("text")
-			   .filter(function(d, i){
-					return (i != 0);
-				})
-			   .text(function(d) {
-					return d[1];
-			   })
-			   .attr("text-anchor", "middle")
-			   .attr("x", function(d, i) {
-					return i * (w / dataDict.length) + barWidth / 2 + 50;
-			   })
-			   .attr("y", function(d) {
-					return h - (d[1] * 8.5) - 12;
-			   })
-			   .attr("font-size", "11px")
-			   .attr("fill", "black");
-						
-			// x軸
-			svg.append("g")
-				.attr("class", "axis")
-				.attr("transform", "translate(0," + h + ")")
-				.attr("font-size", "11px")
-				.attr("fill", "black")
-				.call(xAxis);
-			
-			// y軸
-			svg.append('g') 
-				.attr('class', 'axis')
-				.attr("font-size", "11px")
-				.attr("fill", "black")
-				.call(yAxis);
 			
 		});
 		   
