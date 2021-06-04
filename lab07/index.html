@@ -146,6 +146,7 @@
 				// 動畫，配合 pathTween 函式，循環播放
 				// 更動上面 .html 程式中預置的 svg 的 path 而非新增元素，方便管理版面配置
 				// 第一個 transition 動畫開始時進入迭代式迴圈
+				// 寫這段時看到範本，由於跟別人雷同會不舒服，開始嘗試特意避免類似流程，最後發現範本流程是少數有效解法之一，放棄避開
 				d3.select('#' + targetPathId)
 					.attr('d', circle)
 					.transition()
@@ -165,7 +166,7 @@
 		}
 		
 		// 名字動畫
-        textTransition('name1', 'path1');
+        	textTransition('name1', 'path1');
 		textTransition('name2', 'path2');
 		textTransition('name3', 'path3');
 		
