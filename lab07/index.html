@@ -1,14 +1,173 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
-  <head>
+
+<head>
     <meta charset="utf-8">
-    <title>D3 Page Template</title>
-    <script src="http://d3js.org/d3.v6.min.js" charset="utf-8"></script> <!-- v6.5.0 -->
+    <title>Lab 7</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@900&display=swap');
+
+        h1, div {
+            background-color: rgba(255, 255, 0, 0.1);
+            font-family: 'Noto Serif JP', serif;
+            font-size: 24pt;
+            border: solid 1px black;
+            width: 90%;
+            margin: 5px auto;
+            padding: 10px;
+        }
+
+        div {
+            font-size: 12pt;
+        }
+
+        body {
+            background-color: rgba(255, 128, 255, 0.1);
+        }
+
+        video:hover {
+            box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+        }
+    </style>
+    <script src="http://d3js.org/d3.v6.min.js" charset="utf-8"></script>
+	<script src="https://unpkg.com/d3-interpolate-path/build/d3-interpolate-path.min.js"></script>
 </head>
+
 <body>
+    <h1>
+        lab07 漢字變形 Path Transitions
+    </h1>
+	
+    <div>
+        限定使用 D3.js，參考以下影片。
+        <ul>
+            <li><a href="https://bocoup.com/blog/improving-d3-path-animation">Improving D3 Path Animation</a></li>
+            <li><a href="https://bost.ocks.org/mike/path/">https://bost.ocks.org/mike/path/</a></li>
+        </ul>
+    </div>
+
+    <div>
+        <video width="400" controls loop autoplay>
+            <source src="2.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div>
+        展示區 (姓名)
+        <hr>
+        <object type="image/svg+xml" data="./name/1_uni9673_FZSJSK--GBK1-0.svg" id="name1" width="256"></object>
+        <object type="image/svg+xml" data="./name/2_uni5B88_FZSJSK--GBK1-0.svg" id="name2" width="256"></object>
+        <object type="image/svg+xml" data="./name/3_uni696D_FZSJSK--GBK1-0.svg" id="name3" width="256"></object>
+		<br>
+		<hr>
+		<br>
+		<svg width="256" height="256">
+			<path id="path1" stroke="#59ffff" stroke-width="1.5" fill="none"/><!--stroke 淺藍、寬度 1.5-->
+		</svg>
+		<svg width="256" height="256">
+			<path id="path2" stroke="#59ffff" stroke-width="1.5" fill="none"/>
+		</svg>
+		<svg width="256" height="256">
+			<path id="path3" stroke="#59ffff" stroke-width="1.5" fill="none"/>
+		</svg>
+    </div>
+
+    <div>
+        Drag and Drop 展示區（接收任何SVG）<br>
+		因為沒時間，所以把檔案拖到這裡只會導致瀏覽器開始下載你的檔案
+    </div>
+
     <script type="text/javascript">
-      // Your beautiful D3 code will go here
+	
+		// 來源 http://bl.ocks.org/hoschi/7133091 參考自 lab07 範本
+		// 為表明已理解內容，加上中文註解
+		function pathTween(d1, precision) {
+			return function() {
+				// 呼叫函式的 svg 物件 path
+				var path0 = this,
+				// 複製一份
+				path1 = path0.cloneNode(),
+				
+				// path1 的 d 改成傳入路徑
+				// n0, n1 --> 兩者總段落數
+				n0 = path0.getTotalLength(),
+				n1 = (path1.setAttribute("d", d1), path1).getTotalLength();
+
+				// Uniform sampling of distance based on specified precision.
+				// 取得以傳入 precision 為分隔，0, 0 + precision / max(n0, n1), ..., 1 的 array
+				var distances = [0], i = 0, dt = precision / Math.max(n0, n1);
+				while ((i += dt) < 1) distances.push(i);
+				distances.push(1);
+
+				// Compute point-interpolators at each distance.
+				// 利用 path.getPointAtLength 函式，傳入 distances 值取得 path0, path1 相應位置的點，
+				// 並使用 d3.interpolate 進行插值，補完精密度 distances 各值間的參數變化
+				var points = distances.map(function(t) {
+					var p0 = path0.getPointAtLength(t * n0),
+						p1 = path1.getPointAtLength(t * n1);
+					return d3.interpolate([p0.x, p0.y], [p1.x, p1.y]);
+				});
+
+				// 回傳利用插值完的 points 取得各變化階段各點分布的函式給 attrTween 使用
+				// 將回傳的各點間段落統一改為 L（線段），以便利用 transition 函式，在 transition 進行時正常展示出來
+				return function(t) {
+					return t < 1 ? "M" + points.map(function(p) { return p(t); }).join("L") : d1;
+				};
+			};
+		}
+		
+		// 圓形，路徑切成八等份，因為我想切...沒有，是為了增加動畫細緻度
+		var circle = 'M128,8'
+						+ ' A 120,120 0 0 1 212.853,43.147'
+						+ ' A 120,120 0 0 1 248,128'
+						+ ' A 120,120 0 0 1 212.853,212.853'
+						+ ' A 120,120 0 0 1 128,248'
+						+ ' A 120,120 0 0 1 43.147,212.853'
+						+ ' A 120,120 0 0 1 8,128'
+						+ ' A 120,120 0 0 1 43.147,43.147'
+						+ ' A 120,120 0 0 1 128,8';
+		
+		// 文字動畫函式
+		function textTransition(nameObjId, targetPathId){
+			
+			// 文字物件
+			var nameObj = document.getElementById(nameObjId);
+			// 載入 .svg 檔後啟動動畫流程
+			nameObj.addEventListener('load', function(){
+			
+				var paths = nameObj.contentDocument.getElementsByTagName('path');
+				var namePath = d3.select(paths[0]).attr('d');
+				
+				// 印出文字路徑，並於文字 .svg 檔有一個以上 path 時警示
+				console.log(namePath);
+				if (paths.length > 1)
+					alert("SVG name file should only contain 1 path element.");
+				
+				// 動畫，配合 pathTween 函式，循環播放
+				// 更動上面 .html 程式中預置的 svg 的 path 而非新增元素，方便管理版面配置
+				// 第一個 transition 動畫開始時進入迭代式迴圈
+				d3.select('#' + targetPathId)
+					.attr('d', circle)
+					.transition()
+					.duration(2500)
+					.delay(500)
+					.on('start', function loop(){
+						d3.active(this)
+							.attrTween('d', pathTween(namePath, 10))
+							.transition()
+							.duration(2500)
+							.delay(500)
+							.attrTween('d', pathTween(circle, 10))
+							.transition()
+							.on('start', loop);
+					})
+			});
+		}
+		
+		// 名字動畫
+        textTransition('name1', 'path1');
+		textTransition('name2', 'path2');
+		textTransition('name3', 'path3');
+		
     </script>
-  </body>
-</html>
-  
+  </html>
