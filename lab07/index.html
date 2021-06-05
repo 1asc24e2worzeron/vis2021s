@@ -30,7 +30,6 @@
         }
     </style>
     <script src="https://d3js.org/d3.v6.min.js" charset="utf-8"></script>
-	<script src="https://unpkg.com/d3-interpolate-path/build/d3-interpolate-path.min.js"></script>
 </head>
 
 <body>
@@ -81,27 +80,81 @@
 	
 		// 來源 http://bl.ocks.org/hoschi/7133091 參考自 lab07 範本
 		// 為表明已理解內容，加上中文註解
+		// ................................................
+		// 嘗試改良函式，使原本沒相連的部分，在 transition 過程不會被連起來
+		// 但是效果小到幾乎看不出來，呵呵，沒時間所以不改了
+		// 有人很閒看到的話可以幫我看一下要怎麼改嗎 ==
 		function pathTween(d1, precision) {
 			return function() {
-				// 呼叫函式的 svg 物件 path
+					// 呼叫函式的 svg 物件 path
 				var path0 = this,
-				// 複製一份
-				path1 = path0.cloneNode(),
+					// 複製一份
+					path1 = path0.cloneNode();
+				
+				// new...
+				var split0 = d3.select(path0).attr('d').split('M'),
+					split1 = d3.select(path1).attr('d').split('M');
+				
+				var startLengths0 = [],
+					startLengths1 = [];
+				
+				var str0 = "", str1 = "";
+				var subPath = path0.cloneNode();
+				
+				// 取得每個斷點的位置
+				for (var i = 1; i < Math.max(split0.length, split1.length); ++i)
+				{
+					if (i < split0.length)
+					{
+						str0 += 'M' + split0[i];
+						startLengths0.push((subPath.setAttribute("d", str0), subPath).getTotalLength());
+					}
+					if (i < split1.length)
+					{
+						str1 += 'M' + split1[i];
+						startLengths1.push((subPath.setAttribute("d", str1), subPath).getTotalLength());
+					}
+				}
+				// ...new
 				
 				// path1 的 d 改成傳入路徑
 				// n0, n1 --> 兩者總段落數
-				n0 = path0.getTotalLength(),
+				n0 = path0.getTotalLength();
 				n1 = (path1.setAttribute("d", d1), path1).getTotalLength();
 
 				// Uniform sampling of distance based on specified precision.
 				// 取得以傳入 precision 為分隔，0, 0 + precision / max(n0, n1), ..., 1 的 array
-				var distances = [0], i = 0, dt = precision / Math.max(n0, n1);
-				while ((i += dt) < 1) distances.push(i);
+				var distances = [0], i = 0, dt = precision / Math.max(n0, n1), iCount = 0;
+				// new...
+				var totalCount0 = 1, totalCount1 = 1;
+				var startT = [];
+				// ...new
+				while ((i += dt) < 1)
+				{
+					distances.push(i);
+					// new...
+					// 取得每個斷點的相對指令位置
+					iCount += 1;
+					if (i+dt < 1)
+					{
+						if (startLengths0[totalCount0] < i*n0 && (i+dt)*n0 > startLengths0[totalCount0])
+						{
+							startT.push(iCount+1);
+							totalCount0 += 1;
+						}
+						if (startLengths1[totalCount1] < i*n1 && (i+dt)*n1 > startLengths1[totalCount1])
+						{
+							startT.push(iCount+1);
+							totalCount1 += 1;
+						}
+					}
+					// ...new
+				}
 				distances.push(1);
 
 				// Compute point-interpolators at each distance.
 				// 利用 path.getPointAtLength 函式，傳入 distances 值取得 path0, path1 相應位置的點，
-				// 並使用 d3.interpolate 進行插值，補完精密度 distances 各值間的參數變化
+				// 並使用 d3.interpolate 進行插值，取得精密度 distances 各值間的 path0 --> path1 參數變化
 				var points = distances.map(function(t) {
 					var p0 = path0.getPointAtLength(t * n0),
 						p1 = path1.getPointAtLength(t * n1);
@@ -109,14 +162,34 @@
 				});
 
 				// 回傳利用插值完的 points 取得各變化階段各點分布的函式給 attrTween 使用
-				// 將回傳的各點間段落統一改為 L（線段），以便利用 transition 函式，在 transition 進行時正常展示出來
+				// 將回傳的各點間插值統一改為 L（線段），以便利用 transition 函式，在 transition 進行時正常展示出來
+				// edited...
 				return function(t) {
-					return t < 1 ? "M" + points.map(function(p) { return p(t); }).join("L") : d1;
+					if (t == 1)
+						return d1;
+					
+					var retList = points.map(function(p) { return p(t); });
+					var retValue = 'M' + retList[0];
+					for (var i = 1; i < retList.length; ++i)
+					{
+						// 嘗試將每個斷點通過指令設 M 保留下來，不使其相連
+						for (var j = 0; j < startT.length; ++j)
+							if (startT[j] == i)
+							{
+								retValue += 'M';
+								break;
+							}
+						if (j == startT.length)
+							retValue += 'L';
+						retValue += retList[i];
+					}
+					return retValue;
 				};
+				// ...edited
 			};
 		}
 		
-		// 圓形，路徑切成八等份，因為我想切...沒有，是為了增加動畫細緻度
+		// 圓形，路徑切成八等份，跟動畫無關（因為用 getPointAtLength 取值）
 		var circle = 'M128,8'
 						+ ' A 120,120 0 0 1 212.853,43.147'
 						+ ' A 120,120 0 0 1 248,128'
@@ -145,28 +218,32 @@
 				
 				// 動畫，配合 pathTween 函式，循環播放
 				// 更動上面 .html 程式中預置的 svg 的 path 而非新增元素，方便管理版面配置
-				// 第一個 transition 動畫開始時進入迭代式迴圈
-				// 寫這段時看到範本，由於跟別人雷同會不舒服，開始嘗試特意避免類似流程，最後發現範本流程是少數有效解法之一，放棄避開
+				// 第一個 transition 動畫開始時進入迭代迴圈，速度設為 easeCubic 柔化視覺效果
 				d3.select('#' + targetPathId)
 					.attr('d', circle)
 					.transition()
 					.duration(2500)
+					.ease(d3.easeCubic)
 					.delay(500)
 					.on('start', function loop(){
 						d3.active(this)
 							.attrTween('d', pathTween(namePath, 10))
 							.transition()
 							.duration(2500)
+							.ease(d3.easeCubic)
 							.delay(500)
 							.attrTween('d', pathTween(circle, 10))
 							.transition()
+							.duration(2500)
+							.ease(d3.easeCubic)
+							.delay(500)
 							.on('start', loop);
 					})
 			});
 		}
 		
 		// 名字動畫
-        	textTransition('name1', 'path1');
+		textTransition('name1', 'path1');
 		textTransition('name2', 'path2');
 		textTransition('name3', 'path3');
 		
