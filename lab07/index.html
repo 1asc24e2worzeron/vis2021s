@@ -82,14 +82,18 @@
 		// 為表明已理解內容，加上中文註解
 		// ................................................
 		// 嘗試改良函式，使原本沒相連的部分，在 transition 過程不會被連起來
-		// 但是效果小到幾乎看不出來，呵呵，沒時間所以不改了
-		// 有人很閒看到的話可以幫我看一下要怎麼改嗎 ==
+		// 經過 debug 跟實驗修正，可以看到比原來好了一些，yes
 		function pathTween(d1, precision) {
 			return function() {
 					// 呼叫函式的 svg 物件 path
 				var path0 = this,
 					// 複製一份
 					path1 = path0.cloneNode();
+					
+				// path1 的 d 改成傳入路徑
+				// n0, n1 --> 兩者總段落數
+				n0 = path0.getTotalLength();
+				n1 = (path1.setAttribute("d", d1), path1).getTotalLength();
 				
 				// new...
 				var split0 = d3.select(path0).attr('d').split('M'),
@@ -116,11 +120,6 @@
 					}
 				}
 				// ...new
-				
-				// path1 的 d 改成傳入路徑
-				// n0, n1 --> 兩者總段落數
-				n0 = path0.getTotalLength();
-				n1 = (path1.setAttribute("d", d1), path1).getTotalLength();
 
 				// Uniform sampling of distance based on specified precision.
 				// 取得以傳入 precision 為分隔，0, 0 + precision / max(n0, n1), ..., 1 的 array
@@ -137,14 +136,14 @@
 					iCount += 1;
 					if (i+dt < 1)
 					{
-						if (startLengths0[totalCount0] < i*n0 && (i+dt)*n0 > startLengths0[totalCount0])
+						if (startLengths0[totalCount0] <= i*n0 && (i+dt)*n0 >= startLengths0[totalCount0])
 						{
-							startT.push(iCount+1);
+							startT.push(iCount);
 							totalCount0 += 1;
 						}
-						if (startLengths1[totalCount1] < i*n1 && (i+dt)*n1 > startLengths1[totalCount1])
+						if (startLengths1[totalCount1] <= i*n1 && (i+dt)*n1 >= startLengths1[totalCount1])
 						{
-							startT.push(iCount+1);
+							startT.push(iCount);
 							totalCount1 += 1;
 						}
 					}
