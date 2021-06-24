@@ -1,14 +1,258 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
-  <head>
-    <meta charset="utf-8">
-    <title>D3 Page Template</title>
-    <script src="http://d3js.org/d3.v6.min.js" charset="utf-8"></script> <!-- v6.5.0 -->
+<html>
+<head>
+	<title></title>
+	<script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@200&display=swap" rel="stylesheet">
+	
+	<style type="text/css">
+
+		body {
+			background-color: #B5B5B5;
+			font-family: 'Noto Sans TC', sans-serif;
+		}
+		
+		h3:hover {
+			color: #8A0000;
+		}
+
+		video {
+			position:absolute; 
+			top:50%; 
+			left:50%; 
+			margin-left:-480px; 
+			margin-top:-270px;
+		}
+
+		svg {
+			position:absolute; 
+			top:50%; 
+			left:50%; 
+			margin-left:-480px; 
+			margin-top:-270px;
+			border: 1px solid gray;
+		}
+		svg text {
+		    fill: #FFBFBF;
+		    stroke: #8A0000;
+		    font-family: 'MS PGothic';
+		}
+		text:hover {
+			fill: #8A0000;
+			stroke: #FFBFBF;
+		}
+
+		#replay:hover {
+			box-shadow: 0px 0px 5px 5px rgba(255, 128, 128, 0.5);
+		}
+		#subtitle:hover {
+			box-shadow: 0px 0px 7px 7px rgba(128, 0, 0, 0.5);
+		}
+		
+		#video {
+			pointer-events: none;
+		}
+	</style>
 </head>
 <body>
-    <script type="text/javascript">
-      // Your beautiful D3 code will go here
-    </script>
-  </body>
+
+	<div>
+		<h3>中文字幕：https://home.gamer.com.tw/artwork.php?sn=5033290，譯者：榎宮月</h3>
+		<h3>英文字幕：Offical YT MV</h3>
+		<h3 id="ch_text" style="color:#DB0000; display:inline;">中文</h3>
+		<h3 id="en_text" style="display:inline;">英文</h3>
+	</div>
+
+	<video id="video" width="960px" height="540" preload="auto" onended="document.getElementById('replay').style.display='inline'; document.getElementById('ch_text').style.display='inline'; document.getElementById('en_text').style.display='inline'; document.getElementById('video').style.display='none'; d3.select('#subtitle').remove();">
+	    <source src="./YOASOBI_怪物_Official.mp4" type="video/mp4">
+	</video>
+
+	<div id="srt"></div>
+
+	<script type="text/javascript">
+
+		document.getElementById("video").style.display = "none";
+
+		var language = '_ch';
+
+		d3.select('#ch_text')
+			.on('click', function() {
+				language = '_ch';
+				document.getElementById("ch_text").style.color = '#DB0000';
+				document.getElementById("en_text").style.color = '#000000';
+			});
+			
+		d3.select('#en_text')
+			.on('click', function() {
+				language = '';
+				document.getElementById("ch_text").style.color = '#000000';
+				document.getElementById("en_text").style.color = '#DB0000';
+			});
+
+		d3.select('body')
+		  .append('svg')
+		  .attr('id', 'replay')
+		  .attr('width', 960)
+		  .attr('height', 540)
+		  .append('text')
+		  .text("Replay")
+		  .attr('x', 540)
+		  .attr('y', 279)
+		  .attr('font-size', '60px')
+		  .attr("text-anchor", "middle")
+		  .on('click', function(){
+		  	document.getElementById("video").play();
+		  	document.getElementById("video").style.display = "inline";
+			
+		  	document.getElementById("replay").style.display = "none";
+			
+			document.getElementById("ch_text").style.display = 'none';
+			document.getElementById("en_text").style.display = 'none';
+			
+		  	make_subtitle(language);
+		  })
+		  ;
+
+		var myarray = [];
+		var key;
+		var begin;
+		var end;
+		var dur;
+		var subtitle;
+
+		var time = 0;
+
+		function play_time(){
+			
+			time = 0;
+			
+			let timer = setInterval(() => {
+
+				var mytime;
+
+				if (time % 60 < 10) 
+					mytime = '0' + parseInt(time / 60) + ':' + '0' + time % 60;
+				else
+					mytime = '0' + parseInt(time / 60) + ':' + time % 60;
+
+			    d3.select('#subtitle')
+			      .append('text')
+			      .text(mytime)
+			      .attr('x', 800)
+			      .attr('y', 60)
+				  .attr('font-size', '45px')
+			      .attr('opacity', 0)
+			      .transition()
+			      .duration(1000)
+			      .attr('opacity', 0.7)
+			      .transition()
+			      .duration(1000)
+			      .attr('opacity', 0)
+			      .remove()
+			      ;
+
+			    time++;
+			}, 1000);
+		}
+
+
+		function make_subtitle(language){
+		
+			d3.text('YOASOBI_怪物_lyrics' + language + '.srt', function(data){
+				console.log(data);
+				//alert(data);
+
+				parsedCSV = d3.csvParseRows(data);
+				console.log(parsedCSV);
+				//alert('parsedCSV.length = ' + parsedCSV.length);
+
+				d3.select('#srt')
+				  .selectAll('p')
+				  .data(parsedCSV)
+				  .enter()
+				  .append("p")
+				  .text(function(d, i){
+				  	//return d;
+				  	if ( !isNaN(d) && d != '' ){
+				  		key = parseInt(d);
+				  	} else if (d == '') {
+				  		myarray.push({
+				  			"key": key,
+				  			"begin": begin,
+				  			"end": end,
+				  			"dur": end - begin,
+				  			"subtitle": subtitle
+				  		});
+				  	} else if (d.length == 3 ){
+				  		begin = (parseInt(d[0][3]) * 10 + parseInt(d[0][4])) * 60 +
+				  		        (parseInt(d[0][6]) * 10 + parseInt(d[0][7]));
+
+				  		end =   (parseInt(d[1][11]) * 10 + parseInt(d[1][12])) * 60 +
+				  		        (parseInt(d[1][14]) * 10 + parseInt(d[1][15]));
+				  	} else {
+				  		subtitle = d;
+				  	}   
+				  })
+				  ;
+
+				  // 完成歌詞
+				  console.log(myarray);
+
+				  // 完成歌詞
+				  var w = 960;
+				  var h = 540;
+
+				  var svg = d3.select('body')
+				    .append('svg')
+				    .attr('id', 'subtitle')
+				    .attr('width', w)
+				    .attr('height', h)
+				    .attr('viewbox', function(){
+				    	return "0, 0, " + w + ', ' + h;
+				    })
+				    ;
+
+				svg.selectAll('text')
+			       .data(myarray)
+			       .enter()
+			       .append('text')
+			       .text(function(d, i){
+						return d.subtitle;
+					})
+			       .attr('begin', function(d, i){
+			       		return d.begin;
+			       })
+			       .attr('end', function(d, i){
+			       		return d.end;
+			       })
+			       .attr('x', w / 2)
+			       .attr('y', h - 50)
+				   .attr('font-size', '30px')
+			       .attr("text-anchor", "middle")
+			       .attr('opacity', 0)
+				   .attr('pointer-events', 'none')
+				   .transition()
+			       .delay(function(d){
+			     	   return (d.begin - d.dur / 2) * 1000;
+			       })
+				   .attr('pointer-events', 'all')
+			       .duration(function(d){
+			           return (d.dur + d.dur / 2) * 1000;
+			       })
+			       .attr('opacity', 1)
+			       .transition()
+		           .duration(function(d){
+		               return (d.dur / 6.0 * 1000.0);
+		           })
+			       .attr('opacity', 0)
+			       ;
+
+			    play_time();
+			})
+		}
+
+
+
+	</script>
+</body>
 </html>
-  
